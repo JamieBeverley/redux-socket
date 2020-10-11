@@ -1,8 +1,9 @@
+# redux-socket [wip]
+Utility for Synchronising Redux states across multiple clients with websockets.
 
-- takes a ws instance and 
-
-## Middleware
-### Server
+## Scratch notes...
+### Middleware
+#### Server
 - receives event over ws
 - updates state
 - broadcasts state to all clients
