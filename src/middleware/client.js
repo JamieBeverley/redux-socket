@@ -15,10 +15,11 @@ export const createClientMiddleware = websocket => store => {
     }
 
     // Message received from server, set meta from server to true
-    websocket.onMessage = function(event){
+    websocket.onmessage = function(event){
         const message = JSON.parse(event.data);
-        if(message.type===ReduxWebsocket.wsMessageType){
-            const action = addToActionMetaRxws(message.action,{fromServer:true});
+        if(message.type===RXWSMessageIdentifier){
+            // Mark action as from server, and not to propagate it.
+            const action = addToActionMetaRxws(message.action,{fromServer:true, propagateToServer: false});
             store.dispatch(action)
         } else{
             console.warn('Unrecognized message type from WS server: '+message.type, message);

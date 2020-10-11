@@ -1,28 +1,45 @@
-import {defaultMeta, defaultServerMetadata} from "./util";
 import {createAction} from 'redux-actions';
+
+const defaultServerMetadata = metadata => {
+    metadata = metadata || {};
+    const rxws = metadata.rxws || {}
+    return {
+        ...metadata,
+        rxws: {
+            ...rxws,
+            fromServer: true
+        }
+    }
+};
 
 export const ServerActions = {
     RXWS_CLIENT_CONNECTED: {
         name: "RXWS_CLIENT_CONNECTED",
-        action: createAction("RXWS_CLIENT_CONNECTED", x=>x, ()=> defaultServerMetadata)
+        action: createAction("RXWS_CLIENT_CONNECTED", x=>x, defaultServerMetadata)
+    },
+    RXWS_CLIENT_DISCONNECTED: {
+        name: "RXWS_CLIENT_CONNECTED",
+        action: createAction("RXWS_CLIENT_CONNECTED", x=>x, defaultServerMetadata)
     },
     RXWS_LOAD_FROM_SERVER: {
         name: "RXWS_LOAD_FROM_SERVER",
-        action: createAction("RXWS_LOAD_FROM_SERVER", x=>x, () => defaultServerMetadata)
+        action: createAction("RXWS_LOAD_FROM_SERVER", x=>x, defaultServerMetadata)
     },
     RXWS_RECEIVE_STATE: {
         name: "RXWS_RECEIVE_STATE",
-        action: createAction("RXWS_RECEIVE_STATE", x=>x, () => defaultServerMetadata)
+        action: createAction("RXWS_RECEIVE_STATE", x=>x, defaultServerMetadata)
     }
 }
 
 
 
 const defaultClientSelfMetadata = (metadata) => {
+    metadata = metadata || {};
+    const rxws = metadata.rxws || {}
     return {
         ...metadata,
         rxws:{
-            ...metadata.rxws,
+            ...rxws,
             self:true
         }
     }

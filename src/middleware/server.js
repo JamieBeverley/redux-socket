@@ -5,12 +5,12 @@ import {RXWSMessageIdentifier} from '../constants';
 class WsClient {
     constructor(ws) {
         this.id = WsClient.ids++;
-        WsClient[this.id] = this;
+        WsClient.clients[this.id] = this;
         this.ws = ws;
     }
 
     sendAction(action) {
-        this.ws.send(wrapAction(action))
+        this.ws.send(JSON.stringify(wrapAction(action)))
     }
 
     delete(){
@@ -21,9 +21,11 @@ WsClient.ids = 0;
 WsClient.clients = {};
 WsClient.broadcastAction = (action, exclude=[]) => {
     console.log("broadcasting to all but", exclude)
+    console.log(WsClient.clients);
     Object.values(WsClient.clients).forEach(client=>{
         try{
-            if(!exclude.includes(client)){
+            console.log("sending to", client.id);
+            if(!exclude.includes(client.id)){
                 client.sendAction(action);
             }
         } catch (e){
@@ -57,8 +59,7 @@ export const createServerMiddleWare = (wsServer, options) => store => {
         this.delete();
         const action = ServerActions.RXWS_CLIENT_DISCONNECTED.action({clientId: this.id});
         store.dispatch(action);
-        const msg = wrapAction(action);
-        broadcast(msg);
+        WsClient.broadcastAction(action)
         old.onClientClose(...args);
     }
 

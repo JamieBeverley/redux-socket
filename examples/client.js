@@ -4,6 +4,7 @@ import {Provider,connect} from "react-redux";
 import {render} from 'react-dom'
 import {applyMiddleware, createStore} from "redux";
 import RXWS from "../src";
+import logger from 'redux-logger'
 
 const port = 9001;
 const ws = new WebSocket(`ws://localhost:${port}`)
@@ -11,7 +12,7 @@ ws.onopen = () => {console.log("ws: onopen")}
 ws.onerror = () => {console.log("ws: onerror")}
 ws.onclose = () => {console.log("ws: onclose")}
 
-const store = createStore(sharedReducer, applyMiddleware(RXWS.createClientMiddleware(ws)));
+const store = createStore(sharedReducer, applyMiddleware(RXWS.createClientMiddleware(ws), logger));
 
 const root = document.createElement('div');
 document.body.appendChild(root);

@@ -1,7 +1,8 @@
+import {RXWSMessageIdentifier} from './constants'
 
 export const wrapAction = (action) => ({
     action,
-    type: ReduxWebsocket.wsMessageType
+    type: RXWSMessageIdentifier
 });
 
 export const executeMaybe = (f) => {
@@ -16,10 +17,4 @@ export const addToActionMetaRxws = (action, values) => {
     action.meta = {...action.meta};
     action.meta.rxws = {...action.meta.rxws, ...values};
     return action;
-};
-
-export const defaultServerMetadata = {
-    rxws: {
-        fromServer: true
-    }
 };
