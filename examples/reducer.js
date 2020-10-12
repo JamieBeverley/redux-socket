@@ -1,56 +1,52 @@
 import {createAction} from "redux-actions";
-import {createStore, applyMiddleware} from 'redux';
-import RXWS from "../src/index"
 
 const defaultRXWSMetaCreator = metadata => {
     metadata = metadata || {};
+
     return {
         ...metadata,
         rxws: {
-            ...(metadata.rxws?metadata.rxws:{}),
-            propagateToServer: true
+            ...(metadata.rxws ? metadata.rxws : {}),
+            propagateToServer: true,
+            to: "all"
         }
     }
 }
 
 export const Actions = {
-    "EDIT_TEXT": {
+    "EDIT_SHARED_VALUE": {
         name: "EDIT_TEXT",
-        action: createAction("EDIT_TEXT", x=>x, defaultRXWSMetaCreator)
+        action: createAction("EDIT_TEXT", x => x, defaultRXWSMetaCreator)
     },
-    "EDIT_NUMBER": {
-        name: "EDIT_NUMBER",
-        action: createAction("EDIT_NUMBER", x=>x, defaultRXWSMetaCreator)
+    "EDIT_LOCAL_VALUE": {
+        name: "EDIT_LOCAL_VALUE",
+        action: createAction("EDIT_LOCAL_VALUE", x => x)
     },
-    "EDIT_OTHER_OBJECT": {
-        name: "EDIT_OTHER_OBJECT",
-        action: createAction("EDIT_OTHER_OBJECT", x=>x, defaultRXWSMetaCreator)
+    "EDIT_SERVER_VALUE": {
+        name: "EDIT_SERVER_VALUE",
+        action: createAction("EDIT_SERVER_VALUE", x => x, defaultRXWSMetaCreator)
     }
 }
 
 
 const defaultState = {
-    text: "",
-    number: 1,
-    otherObject: {
-        a: null,
-        b: 2,
-    }
+    shared_value: "this will update across all connected clients",
+    local_value: "this won't propagate to other clients.",
+    server_value: 0
 }
 
 function sharedReducer(state = defaultState, action) {
-    if (action.type === Actions.EDIT_NUMBER.name) {
-        return {...state, number: action.payload};
-    } else if (action.type === Actions.EDIT_TEXT.name) {
-        return {...state, text: action.payload};
 
-    } else if (action.type === Actions.EDIT_OTHER_OBJECT.name) {
-        return {...state, otherObject: action.payload}
-
-    } else {
-        console.warn(`unrecognized action...${action.type}`)
-        return state
+    if (action.type === Actions.EDIT_SHARED_VALUE.name) {
+        return {...state, shared_value: action.payload};
+    } else if (action.type === Actions.EDIT_LOCAL_VALUE.name) {
+        return {...state, local_value: action.payload};
+    } else if (action.type === Actions.EDIT_SERVER_VALUE.name) {
+        return {...state, server_value: action.payload};
     }
+
+    console.warn("unrecognized action", action.type)
+    return state;
 }
 
 export default sharedReducer;

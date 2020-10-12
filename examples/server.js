@@ -2,7 +2,8 @@ import http from 'http';
 import WebSocket from 'ws';
 import RXWS from '../src/index.js'
 import {applyMiddleware, createStore} from 'redux';
-import sharedReducer from "./reducer";
+import sharedReducer, {Actions} from "./reducer";
+import {debug} from "webpack";
 
 const minimalLogger = store => next => action =>{
     const result = next(action)
@@ -16,5 +17,14 @@ const server = http.createServer();
 console.log(server);
 const wss = new WebSocket.Server({ server });
 server.listen(9001)
-const store = createStore(sharedReducer, applyMiddleware(RXWS.createServerMiddleWare(wss), minimalLogger));
+const store = createStore(sharedReducer, applyMiddleware(RXWS.createServerMiddleWare(wss, {pwd:'pwd'}), minimalLogger));
+
+// Some value updated from server-side and sent to connected clients
+setInterval(()=>{
+    const state = store.getState();
+    const server_value = state.server_value + 1;
+    const action = Actions.EDIT_SERVER_VALUE.action(server_value);
+    store.dispatch(action);
+}, 1000);
+
 console.log("running")

@@ -4,7 +4,7 @@
   "description": "- takes a ws instance and",
   "main": "index.js",
   "scripts": {
-    "example_backend": "nodemon --exec babel-node examples/server.js",
+    "example_backend": "nodemon --inspect --exec babel-node examples/server.js",
     "example": "webpack serve",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,16 +23,16 @@
   },
   "homepage": "https://github.com/jamiebeverley/redux-socket#readme",
   "dependencies": {
-    "@babel/node": "^7.10.5",
-    "nodemon": "^2.0.4",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-redux": "^7.2.1",
     "redux": "^4.0.5",
     "redux-actions": "^2.6.5",
     "ws": "^7.3.1"
   },
   "devDependencies": {
+    "@babel/node": "^7.10.5",
+    "nodemon": "^2.0.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
     "@babel/core": "^7.11.6",
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",

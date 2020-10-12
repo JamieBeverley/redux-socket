@@ -1,40 +1,48 @@
 import {wrapAction, executeMaybe} from '../util'
-import {ServerActions} from '../actions'
+import {ClientActions, ServerActions} from '../actions'
 import {RXWSMessageIdentifier} from '../constants';
 
-class WsClient {
-    constructor(ws) {
-        this.id = WsClient.ids++;
-        WsClient.clients[this.id] = this;
-        this.ws = ws;
-    }
-
-    sendAction(action) {
-        this.ws.send(JSON.stringify(wrapAction(action)))
-    }
-
-    delete(){
-        delete WsClient.clients[this.id]
-    }
-}
-WsClient.ids = 0;
-WsClient.clients = {};
-WsClient.broadcastAction = (action, exclude=[]) => {
-    console.log("broadcasting to all but", exclude)
-    console.log(WsClient.clients);
-    Object.values(WsClient.clients).forEach(client=>{
-        try{
-            console.log("sending to", client.id);
-            if(!exclude.includes(client.id)){
-                client.sendAction(action);
-            }
-        } catch (e){
-            console.error(e);
-        }
-    });
-};
 
 export const createServerMiddleWare = (wsServer, options) => store => {
+
+    // TODO clean this so not nested...
+    class WsClient {
+        constructor(ws) {
+            this.id = WsClient.ids++;
+            this.authenticated = options.pwd === undefined;
+            WsClient.clients[this.id] = this;
+            this.ws = ws;
+        }
+
+        sendAction(action) {
+            if (this.authenticated) {
+                this.ws.send(JSON.stringify(wrapAction(action)))
+            } else {
+                console.warn("Client", this.id, "not authenticated for action", action.type)
+            }
+        }
+
+        delete() {
+            delete WsClient.clients[this.id]
+        }
+    }
+
+    WsClient.ids = 0;
+    WsClient.clients = {};
+    WsClient.broadcastAction = (action, to) => {
+        console.log("broadcasting to ", to);
+        console.log(WsClient.clients);
+        to.forEach(id => {
+            const client = WsClient.clients[id];
+            try {
+                console.log("sending to ", id);
+                client.sendAction(action);
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    };
+
 
     const old = {
         onConnection: executeMaybe(wsServer.onConnection).bind(wsServer),
@@ -46,9 +54,9 @@ export const createServerMiddleWare = (wsServer, options) => store => {
         const msg = JSON.parse(data);
         if (msg.type === RXWSMessageIdentifier) {
             // Append clientId to actions rxws metadata.
-            msg.action.meta = {...msg.action.meta, rxws:{...msg.action.meta.rxws, issuer: this.id}};
+            // Important that 'issuer' is assigned here, otherwise middleware will propagate back to issuer.
+            msg.action.meta = {...msg.action.meta, rxws: {...msg.action.meta.rxws, issuer: this.id}};
             store.dispatch(msg.action);
-            WsClient.broadcastAction(msg.action, [this.id]);
         } else {
             console.warn('Unrecognized ws message type: ', msg.type, JSON.stringify(data));
         }
@@ -59,7 +67,6 @@ export const createServerMiddleWare = (wsServer, options) => store => {
         this.delete();
         const action = ServerActions.RXWS_CLIENT_DISCONNECTED.action({clientId: this.id});
         store.dispatch(action);
-        WsClient.broadcastAction(action)
         old.onClientClose(...args);
     }
 
@@ -73,31 +80,32 @@ export const createServerMiddleWare = (wsServer, options) => store => {
     }.bind(wsServer));
 
     return next => action => {
-        if (action.type === ServerActions.RXWS_LOAD_FROM_SERVER.name) {
-            const state = {...store.getState()};
-            const action = ServerActions.RXWS_RECEIVE_STATE.action({state});
-            const client = WsClient.clients[action.meta.rxws.issuer];
-            client.sendAction(action);
+        // if (action.type === ServerActions.RXWS_LOAD_FROM_SERVER.name) {
+        //     const state = {...store.getState()};
+        //     const action = ServerActions.RXWS_RECEIVE_STATE.action({state});
+        //     const client = WsClient.clients[action.meta.rxws.issuer];
+        //     client.sendAction(action);
+        // }
+        const rxws = getMetaRXWS(action)
+
+        if (action.type === ClientActions.RXWS_AUTHENTICATE.name && action.payload === options.pwd) {
+            const issuer = getMetaRXWS(action).issuer;
+            const client = WsClient.clients[issuer];
+            client.authenticated = true;
         }
-        return next(action);
+
+        let to = rxws.to || "all"; // is broadcasting an appropriate default?
+        to = to === "all" ? Object.keys(WsClient.clients) : to;
+        to = to.filter(x => x !== rxws.issuer || rxws.issuer === undefined);
+        WsClient.broadcastAction(action, to);
+
+        return next(action)
     }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const getMetaRXWS = function (action) {
+    return ((action.meta || {}).rxws || {})
+}
 
 
 //

@@ -69,5 +69,10 @@ export const  ClientActions = {
     RXWS_CLIENT_ERROR :{
         name: "RXWS_CLIENT_ERROR",
         action: createAction("RXWS_CLIENT_ERROR", x=>x, ()=>{})
+    },
+    RXWS_AUTHENTICATE :{
+        name: "RXWS_AUTHENTICATE",
+        // Metadata special here, to is set to none so server doesn't try to broadcast pwd to others...
+        action: createAction("RXWS_AUTHENTICATE", x=>x, ()=>({rxws:{propagateToServer:true, to:[]}}))
     }
 };

@@ -2,7 +2,7 @@ import {addToActionMetaRxws, executeMaybe} from '../util'
 import {ClientActions} from '../actions'
 import {RXWSMessageIdentifier} from "../constants";
 
-export const createClientMiddleware = websocket => store => {
+export const createClientMiddleware = (websocket, options) => store => {
     const old = ["onmessage", "onclose", "onerror", "onconnect"].reduce((acc,x)=>{
         acc[x] = executeMaybe(websocket[x]).bind(websocket);
         return acc;
@@ -42,7 +42,8 @@ export const createClientMiddleware = websocket => store => {
     function sendAction(action){
         const data = {
             type: RXWSMessageIdentifier,
-            action: action
+            action: action,
+            pwd: (options || {}).pwd
         }
         websocket.send(JSON.stringify(data));
     }
