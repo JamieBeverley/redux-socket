@@ -5,6 +5,7 @@ import {render} from 'react-dom'
 import {applyMiddleware, createStore} from "redux";
 import RXWS from "../src";
 import logger from 'redux-logger'
+import {ClientActions} from "../src/actions";
 
 // Create a ws connection to localhost 9001
 const port = 9001;
@@ -29,6 +30,13 @@ class App extends Component {
         this.state = {
             pwd: ''
         }
+    }
+
+    componentDidMount() {
+        console.log("okay...")
+        setTimeout(()=>{
+            store.dispatch(ClientActions.RXWS_REQUEST_STATE.action());
+        },1000)
     }
 
     authenticate(e) {

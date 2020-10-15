@@ -1,4 +1,5 @@
 import {createAction} from "redux-actions";
+import RXWS from "../src";
 
 const defaultRXWSMetaCreator = metadata => {
     metadata = metadata || {};
@@ -43,9 +44,11 @@ function sharedReducer(state = defaultState, action) {
         return {...state, local_value: action.payload};
     } else if (action.type === Actions.EDIT_SERVER_VALUE.name) {
         return {...state, server_value: action.payload};
+    } else if (action.type === RXWS.actions.ServerActions.RXWD_PROVIDE_STATE.name){
+        return action.payload
     }
 
-    console.warn("unrecognized action", action.type)
+    console.warn("Unrecognized action", action.type)
     return state;
 }
 

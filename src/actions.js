@@ -28,6 +28,10 @@ export const ServerActions = {
     RXWS_RECEIVE_STATE: {
         name: "RXWS_RECEIVE_STATE",
         action: createAction("RXWS_RECEIVE_STATE", x=>x, defaultServerMetadata)
+    },
+    RXWD_PROVIDE_STATE:{
+        name:"RXWD_PROVIDE_STATE",
+        action: createAction("RXWD_PROVIDE_STATE", x=>x, defaultServerMetadata)
     }
 }
 
@@ -74,5 +78,9 @@ export const  ClientActions = {
         name: "RXWS_AUTHENTICATE",
         // Metadata special here, to is set to none so server doesn't try to broadcast pwd to others...
         action: createAction("RXWS_AUTHENTICATE", x=>x, ()=>({rxws:{propagateToServer:true, to:[]}}))
+    },
+    RXWS_REQUEST_STATE: {
+        name:"RXWS_REQUEST_STATE",
+        action: createAction("RXWS_REQUEST_STATE", x=>x , x=>({rxws:{propagateToServer: true, to:[]}}))
     }
 };

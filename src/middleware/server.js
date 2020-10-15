@@ -3,7 +3,9 @@ import {ClientActions, ServerActions} from '../actions'
 import {RXWSMessageIdentifier} from '../constants';
 
 
-export const createServerMiddleWare = (wsServer, options) => store => {
+export const createServerMiddleWare = (wsServer, options, middleware = ()=>{}) => store => {
+
+    middleware = typeof(middleware) === "function" ? middleware : ()=>{}
 
     // TODO clean this so not nested...
     class WsClient {
@@ -31,7 +33,6 @@ export const createServerMiddleWare = (wsServer, options) => store => {
     WsClient.clients = {};
     WsClient.broadcastAction = (action, to) => {
         console.log("broadcasting to ", to);
-        console.log(WsClient.clients);
         to.forEach(id => {
             const client = WsClient.clients[id];
             try {
@@ -87,11 +88,17 @@ export const createServerMiddleWare = (wsServer, options) => store => {
         //     client.sendAction(action);
         // }
         const rxws = getMetaRXWS(action)
+        middleware(store, action);
 
         if (action.type === ClientActions.RXWS_AUTHENTICATE.name && action.payload === options.pwd) {
             const issuer = getMetaRXWS(action).issuer;
             const client = WsClient.clients[issuer];
             client.authenticated = true;
+        } else if (action.type === ClientActions.RXWS_REQUEST_STATE.name){
+            const issuer = getMetaRXWS(action).issuer;
+            const state = store.getState();
+            const newAction = ServerActions.RXWD_PROVIDE_STATE.action(state);
+            WsClient.clients[issuer].sendAction(newAction);
         }
 
         let to = rxws.to || "all"; // is broadcasting an appropriate default?
@@ -103,8 +110,8 @@ export const createServerMiddleWare = (wsServer, options) => store => {
     }
 };
 
-const getMetaRXWS = function (action) {
-    return ((action.meta || {}).rxws || {})
+const getMetaRXWS = function (a) {
+    return ((a.meta || {}).rxws || {})
 }
 
 
