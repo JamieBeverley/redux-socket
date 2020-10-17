@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "- takes a ws instance and",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "example_backend": "nodemon --inspect --exec babel-node examples/server.js",
     "example": "webpack serve",
